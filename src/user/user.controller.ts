@@ -23,6 +23,13 @@ export class UserController {
   constructor(private userService: UserService) {
   }
 
+  @Get('findAllUser')
+  findAllUser() {
+    let resp = this.userService.findAll();
+    console.log('findAllUser', resp);
+    return resp;
+  };
+
   @Get('get')
   // @Redirect('https://www.baidu.com', 302) // 可以重定向
   // ParseIntPipe 内置pipe，校验参数是什么类型，不是则报错
