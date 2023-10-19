@@ -11,9 +11,9 @@ import {
   UseFilters,
 } from '@nestjs/common';
 import { Request } from 'express';
-import { EditUserDto } from '../dto/edit-user.dto';
 import { UserService } from '../user/user.service'
 import { HttpExceptionFilter } from '../filter/http-exception.filter';
+import {User} from "./user.entity";
 
 
 // @xxx是nextjs框架带有的，叫做decorator(装饰器)
@@ -47,9 +47,8 @@ export class UserController {
   @Post('create')
   // 这个方法报错会经过过滤器
   @UseFilters(new HttpExceptionFilter())
-  async creatUserInfo(@Body() userDto: EditUserDto) {
-    console.log('creat-userDto', userDto);
-    this.userService.createUser(userDto);
+  async addUserInfo(@Body() user: User) {
+    this.userService.addUser(user);
     // throw new ForbiddenException();
   }
 

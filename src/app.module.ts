@@ -24,10 +24,13 @@ import {UsersModule} from "./user/user.module";
     UsersModule,
   ],
   controllers: [AppController],
-  providers: [AppService,{
-    provide: APP_FILTER, // 设置全局报错拦截器
-    useClass: AllExceptionsFilter,
-  },],
+  providers: [
+      AppService,
+      {
+        provide: APP_FILTER, // 设置全局报错拦截器
+        useClass: AllExceptionsFilter,
+      },
+  ],
 })
 // 包含中间件的模块必须实现 NestModule 接口
 export class AppModule implements NestModule{

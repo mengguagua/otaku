@@ -5,13 +5,16 @@ export class User {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
+  @Column({default: ''})
   email: string;
 
-  @Column()
+  @Column({
+    default: '',
+    unique: true,
+  })
   phone: string;
 
-  @Column()
+  @Column({default: ''})
   nickName: string;
 
   @Column({ default: true })
