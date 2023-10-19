@@ -1,7 +1,7 @@
 ### otaku-宅
 尝试用node写一个后端服务，类似论坛v2ex，git issue
 
-### 前提文档
+### 后端相关技术
 
 后端框架是nestjs：https://docs.nestjs.com/
 
@@ -14,18 +14,22 @@
 - src // 代码目录
 
      - filter // 过滤器目录
-
+     
      - guards // 授权守卫。处理鉴权逻辑
-
+     
      - Interceptors // 类似java的AOP。1、在方法执行之前/之后绑定额外的逻辑。2、转换函数返回的结果。3、转换函数抛出的异常。4、扩展基本功能行为。5、根据特定条件完全覆盖函数
-
+     
      - middleware // 中间s件目录。根据接口路径拦截请求，如处理日志功能这样的中间件
-
-     - user等 // 业务目录:包括controller和service
-
+     
      - app.module // 模块文件：controller、service、拦截器、过滤器等需要在这里注册
-
+     
      - main.ts // 入口文件
+     
+     - dto // 定义前端传递后端服务的类，在这个类里进行必填，和一些正则校验。
+     
+       >  命名规则：业务名称-接口名称.dto.ts，如ath-login.dto.ts
+     
+     - user等 // 业务目录:包括controller，service和module（框架建议一个模块内容放在一个文件夹内）
 
 ### 主体功能
 
@@ -127,7 +131,7 @@ async addUser(user: User) {
       synchronize: true, // 指示是否应在每次应用程序启动时自动创建数据库架构。生产中改false
     }),
     // 关注这一行
-    UsersModule,
+    UserModule,
   ],
  	...
 })
@@ -138,6 +142,24 @@ async addUser(user: User) {
 11、最终效果，typeorm框架会创建`user`表，插入对应数据。
 
 [<img src="https://z1.ax1x.com/2023/10/18/piP7hrD.png" alt="piP7hrD.png" style="zoom: 33%;" />](https://imgse.com/i/piP7hrD)
+
+##### 用户登录接口
+
+
+
+### 小窍门
+
+1、快速生成一个模块的文件和基础代码（会生成在src路径下）
+
+```sh
+$ nest g module auth
+$ nest g controller auth
+$ nest g service auth
+```
+
+2、nestjs自带的dto校验装饰器列表
+
+参考：https://blog.csdn.net/qq_38734862/article/details/117265394
 
 
 

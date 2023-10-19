@@ -7,7 +7,8 @@ import { AllExceptionsFilter } from './filter/all-exception.filter';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 import { User } from './user/user.entity';
-import {UsersModule} from "./user/user.module";
+import {UserModule} from "./user/user.module";
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -21,7 +22,8 @@ import {UsersModule} from "./user/user.module";
       entities: [User],
       synchronize: true, // 指示是否应在每次应用程序启动时自动创建数据库架构。生产中改false
     }),
-    UsersModule,
+    UserModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [

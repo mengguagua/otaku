@@ -24,8 +24,11 @@ export class AllExceptionsFilter implements ExceptionFilter {
         ? exception.getStatus()
         : HttpStatus.INTERNAL_SERVER_ERROR;
 
+    const message = exception instanceof HttpException ? exception.getResponse() : {message:'网络拥堵，稍后再试'};
+    // todo 优化统一报错
     const responseBody = {
-      statusCode: httpStatus,
+      data: typeof message === 'object'? {...message} : message,
+      // statusCode: httpStatus,
       timestamp: new Date().toISOString(),
       path: httpAdapter.getRequestUrl(ctx.getRequest()),
     };

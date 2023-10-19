@@ -30,20 +30,20 @@ export class UserController {
     return resp;
   };
 
-  @Get('get')
+  @Post('getByPhone')
   // @Redirect('https://www.baidu.com', 302) // 可以重定向
   // ParseIntPipe 内置pipe，校验参数是什么类型，不是则报错
-  getUserInfo(@Query('id', ParseIntPipe) request: Request) {
-  // getUserInfo(@Query() request: Request) {
-    return 'hi 获得用户 gaocc'
+  findOneUser(@Body() user: User) {
+    return this.userService.findOne(user.phone);
   }
+
   @Get('check')
   checkUserInfo(@Query() request: Request) {
     // debugger;
     console.log('request', request);
     throw new ForbiddenException();
   }
-  // 默认接收到x-www-form-urlencoded类型到body
+
   @Post('create')
   // 这个方法报错会经过过滤器
   @UseFilters(new HttpExceptionFilter())
