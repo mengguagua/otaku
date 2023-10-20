@@ -161,9 +161,15 @@ $ nest g service auth
 
 参考：https://blog.csdn.net/qq_38734862/article/details/117265394
 
+3、nestjs官方教程代码例子
 
+地址：https://github.com/nestjs/nest/tree/master/sample/19-auth-jwt
 
-mysql
+4、JwtModule的配置项说明
+
+地址：https://github.com/auth0/node-jsonwebtoken#jwtsignpayload-secretorprivatekey-options-callback
+
+n、mysql
 
 - root / Gcc@163.com / otaku
 
