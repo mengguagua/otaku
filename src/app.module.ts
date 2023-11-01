@@ -2,13 +2,14 @@ import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { LoggerMiddleware } from './middleware/logger.middleware';
-import { APP_FILTER } from '@nestjs/core';
+import {APP_FILTER, APP_INTERCEPTOR} from '@nestjs/core';
 import { AllExceptionsFilter } from './filter/all-exception.filter';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 import { User } from './user/user.entity';
 import {UserModule} from "./user/user.module";
 import { AuthModule } from './auth/auth.module';
+import {FormatterInterceptor} from "./Interceptors/formatter.interceptor";
 
 @Module({
   imports: [
@@ -27,11 +28,15 @@ import { AuthModule } from './auth/auth.module';
   ],
   controllers: [AppController],
   providers: [
-      AppService,
-      {
-        provide: APP_FILTER, // 设置全局报错拦截器
-        useClass: AllExceptionsFilter,
-      },
+    AppService,
+    {
+      provide: APP_FILTER, // 设置全局报错拦截器
+      useClass: AllExceptionsFilter,
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: FormatterInterceptor,
+    }
   ],
 })
 // 包含中间件的模块必须实现 NestModule 接口

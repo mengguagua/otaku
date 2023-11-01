@@ -304,7 +304,70 @@ postman调用login效果
 
 [![piAwePJ.png](https://z1.ax1x.com/2023/10/23/piAwePJ.png)](https://imgse.com/i/piAwePJ)
 
+#### 拦截器
 
+定位：在方法执行之前/之后绑定额外的逻辑，转换函数返回的结果，接口请求安全处理（ip限频等）
+
+声明方式：拦截器是一个用 `@Injectable()` 装饰器注释的类，并实现 `NestInterceptor` 接口。
+
+1、创建拦截器类。
+
+```typescript
+import {CallHandler, ExecutionContext, Injectable, NestInterceptor} from "@nestjs/common";
+import {map, Observable} from "rxjs";
+
+export interface Response<T> {
+    data: T;
+}
+// 继承NestInterceptor
+@Injectable()
+export class FormatterInterceptor <T> implements NestInterceptor<T, Response<T>> {
+  	// 实现接口方法，ExecutionContext是请求内容的上下文，next.handle()触发拦截器之后逻辑的方法
+    intercept(context: ExecutionContext, next: CallHandler<T>): Observable<Response<T>> | Promise<Observable<Response<T>>> {
+        return next.handle().pipe(map((data) => {
+            return {
+                data: data,
+                timestamp: new Date().toISOString(),
+                status: 1, // 1正确，0错误
+            };
+        }));
+    }
+}
+```
+
+2、全局声明使用拦截器
+
+```typescript
+// 文件：app.module.ts
+@Module({
+  imports: [
+    TypeOrmModule.forRoot({
+      ...
+    }),
+    UserModule,
+    AuthModule,
+  ],
+  controllers: [AppController],
+  providers: [
+    AppService,
+    // 声明全局
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: FormatterInterceptor,
+    }
+  ],
+})
+```
+
+3、intercept方法返回类型是Observable，就是`RxJS`，处理请求前或返回流都是使用**RxJS**函数，所以要了解下这个概念。
+
+参考文章：https://zhuanlan.zhihu.com/p/583539989
+
+中文官网：https://cn.rx.js.org/manual/overview.html
+
+4、格式化拦截器效果
+
+[<img src="https://z1.ax1x.com/2023/11/01/piuFNGD.png" alt="piuFNGD.png" style="zoom: 50%;" />](https://imgse.com/i/piuFNGD)
 
 
 

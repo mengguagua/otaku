@@ -19,7 +19,7 @@ import {FormatterInterceptor} from "../Interceptors/formatter.interceptor";
 
 // @xxx是nextjs框架带有的，叫做decorator(装饰器)
 @Controller('user')
-@UseInterceptors(FormatterInterceptor)
+// @UseInterceptors(FormatterInterceptor) // 在app.module.ts里全局设置里，单独设置可以用这种方法
 export class UserController {
   // UserService 通过类构造函数注入.private 这种简写允许我们立即在同一位置声明和初始化 userService 成员
   constructor(private userService: UserService) {
