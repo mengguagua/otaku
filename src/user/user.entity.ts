@@ -9,10 +9,12 @@ export class User {
   email: string;
 
   @Column({
-    default: '',
     unique: true,
   })
   phone: string;
+
+  @Column()
+  password: string;
 
   @Column({default: ''})
   nickName: string;
