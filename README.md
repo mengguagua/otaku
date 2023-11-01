@@ -5,6 +5,8 @@
 
 后端框架是nestjs：https://docs.nestjs.com/
 
+> 建议先通读OVERVIEW全部章节：https://docs.nestjs.com/first-steps
+
 操作数据库框架是typeorm：https://typeorm.io/entities
 
 数据库：mysql
@@ -62,9 +64,15 @@
 > ```
 >
 
-#### 用户操作/登录
+#### 部分接口说明
 
-##### 创建用户接口
+目的：通过编写接口的过程，逐步理解js后端生态，和各种技术概念和作用
+
+tip：使用[postman](https://www.postman.com/)工具调试接口
+
+##### 创建用户
+
+> 需要理解，`装饰器`，`实体类@Entity`，`注入`，`提供者(provider)`，`模块@Module`，`TypeOrm`，`mysql`这些内容的是什么概念，有什么作用。
 
 1、创建UserController类，用装饰器**@Controller**，**@Post**定义接口路径
 
@@ -143,7 +151,160 @@ async addUser(user: User) {
 
 [<img src="https://z1.ax1x.com/2023/10/18/piP7hrD.png" alt="piP7hrD.png" style="zoom: 33%;" />](https://imgse.com/i/piP7hrD)
 
-##### 用户登录接口
+##### 用户登录/鉴权
+
+> 需要理解，`dto`, `dto装饰器`, `Guards`, `JWT`, `postman`这些内容的是什么概念，有什么作用。
+
+1、使用命令快速创建auth模块。类似上述user模块在AuthController类创建login方法，入参设置Dto类型
+
+```sh
+$ nest g module auth
+$ nest g controller auth
+$ nest g service auth
+```
+
+2、创建入参对应的dto类，使用`@IsNotEmpty`等装饰器，校验入参，接受入参（[dto装饰器选项](https://blog.csdn.net/qq_38734862/article/details/117265394)）
+
+```js
+import {IsNotEmpty} from "class-validator";
+export class AuthLoginDto {
+    @IsNotEmpty({message: '手机号不能为空'})
+    phone: string;
+
+    @IsNotEmpty({message: '密码不能为空'})
+    password: string;
+}
+```
+
+3、入参需要正则校验的字段，自定义正则工具方法
+
+> 如果工具是js文件，需要tsconfig.json文件里设置`"allowJs": true`
+
+4、AuthService类创建登录验证方法，验证逻辑如下：
+
+- 通过手机号得到数据库的用户信息(用户密码)
+
+- 判断数据库的用户密码是否等于接口入参密码
+
+- 通过JwtService加密用户信息，返回token。JWT需要在@Module()里注册，声明加密密钥和过期时间
+
+  > ```js
+  > imports: [
+  >   UserModule, // 鉴权需要使用userService内的方法，获取用户信息所以要导入
+  >   JwtModule.register({
+  >     global: true,
+  >     secret: jwtConstants.secret,
+  >     signOptions: { expiresIn: '7d' },
+  >   }), // 模块都是先导入再使用，所以JwtModule也一样。
+  > ],
+  > ```
+
+```js
+async signIn(phone: string, pass: string): Promise<any> {
+      let user = await this.userService.findOne(phone);
+      if (user?.password != pass) {
+          throw new UnauthorizedException(); // 密码错误
+      }
+      const payload = { sub: user.id, username: user.phone }; // 加密，解密后也是拿到这个内容
+      // 解构写法，password是user属性，取用后，result这个自定义的对象就是user去掉password后的内容
+      const {password, ...result} = user; // token包含的用户信息去掉密码。
+      return {
+          access_token: await this.jwtService.signAsync(payload), // 创建token
+          ...result
+      };
+  }
+```
+
+5、创建鉴权类AuthGuard继承CanActivate，实现验证token，并可从token获取用户信息
+
+> CanActivate是Guards(守卫)，框架定义的，在http请求到接口路由处理之间，形式类似拦截器，主要用于鉴权。
+
+- 获取request对象，解析headers头获取Authorization的值，获取token。Authorization值的格式是：**Bearer空格token**
+
+- 将token和密钥给JWT解析方法，解析成功则返回用户信息，失败则抛异常给catch捕获
+
+- @Module里设置全局路由Guards
+
+  > ```
+  > providers: [
+  >   AuthService,
+  >   // 设置全局路由鉴权
+  >   {
+  >     provide: APP_GUARD,
+  >     useClass: AuthGuard,
+  >   }
+  > ]
+  > ```
+
+```js
+export class AuthGuard implements CanActivate {
+    constructor(private jwtService: JwtService) {}
+  
+  	// CanActivate接口方法，拦截后会默认执行
+    async canActivate(context: ExecutionContext): Promise<boolean> {
+        // 拦截路由，判断鉴权
+        const request = context.switchToHttp().getRequest();
+        const token = this.extractTokenFromHeader(request);
+        if (!token) {
+            throw new UnauthorizedException();
+        }
+        try {
+            const payload = await this.jwtService.verifyAsync(token, {secret: jwtConstants.secret});
+            // 赋值给request可以在路由处理程序中访问它
+            request['user'] = payload;
+        } catch {
+            throw new UnauthorizedException();
+        }
+        return true;
+    }
+
+    private extractTokenFromHeader(request: Request): string | undefined {
+        const [type, token] = request.headers.authorization?.split(' ') ?? [];
+        return type === 'Bearer' ? token : undefined;
+    }
+}
+```
+
+6、自定义一个装饰器@Public()，在解析token的逻辑里获取装饰器，跳过鉴权
+
+```js
+import { SetMetadata } from '@nestjs/common';
+
+export const IS_PUBLIC_KEY = 'isPublic';
+// 使用 SetMetadata 装饰器工厂函数创建自定义装饰器
+export const Public = () => SetMetadata(IS_PUBLIC_KEY, true);
+```
+
+```js
+async canActivate(context: ExecutionContext): Promise<boolean> {
+    		// 拦截路径，是否跳过鉴权
+        const isPublic =  this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [context.getHandler(), context.getClass()]);
+        if (isPublic) {
+            return true;
+        }
+				.......
+}
+```
+
+```js
+// 登录接口跳过拦截
+@Public()
+@Post('login')
+login(@Body() authLoginDto: AuthLoginDto) {
+    if (! validatePhoneNumber(authLoginDto.phone)) {
+        return {message: '手机号验证错误'}
+    }
+    return this.authService.signIn(authLoginDto.phone, authLoginDto.password);
+}
+```
+
+postman调用login效果
+
+[![piAwFbT.png](https://z1.ax1x.com/2023/10/23/piAwFbT.png)](https://imgse.com/i/piAwFbT)
+
+[![piAwePJ.png](https://z1.ax1x.com/2023/10/23/piAwePJ.png)](https://imgse.com/i/piAwePJ)
+
+
 
 
 

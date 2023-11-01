@@ -8,16 +8,18 @@ import {
   Query,
   Redirect,
   Req,
-  UseFilters,
+  UseFilters, UseInterceptors,
 } from '@nestjs/common';
 import { Request } from 'express';
 import { UserService } from '../user/user.service'
 import { HttpExceptionFilter } from '../filter/http-exception.filter';
 import {User} from "./user.entity";
+import {FormatterInterceptor} from "../Interceptors/formatter.interceptor";
 
 
 // @xxx是nextjs框架带有的，叫做decorator(装饰器)
 @Controller('user')
+@UseInterceptors(FormatterInterceptor)
 export class UserController {
   // UserService 通过类构造函数注入.private 这种简写允许我们立即在同一位置声明和初始化 userService 成员
   constructor(private userService: UserService) {
