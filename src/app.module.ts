@@ -10,21 +10,25 @@ import { User } from './user/user.entity';
 import {UserModule} from "./user/user.module";
 import { AuthModule } from './auth/auth.module';
 import {FormatterInterceptor} from "./Interceptors/formatter.interceptor";
+import { LinkModule } from './link/link.module';
+import {Link} from "./link/link.entity";
 
 @Module({
   imports: [
     TypeOrmModule.forRoot({
       type: 'mysql',
-      host: 'localhost',
+      // host: 'localhost',
+      host: '60.204.217.188',
       port: 3306,
       username: 'root',
       password: 'Gcc@163.com',
       database: 'otaku',
-      entities: [User],
+      entities: [User, Link],
       synchronize: true, // 指示是否应在每次应用程序启动时自动创建数据库架构。生产中改false
     }),
     UserModule,
     AuthModule,
+    LinkModule,
   ],
   controllers: [AppController],
   providers: [

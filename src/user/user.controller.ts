@@ -50,7 +50,7 @@ export class UserController {
   // 这个方法报错会经过过滤器
   // @UseFilters(new HttpExceptionFilter())
   async addUserInfo(@Body() user: User) {
-    this.userService.addUser(user);
+    await this.userService.addUser(user);
     // throw new ForbiddenException();
   }
 

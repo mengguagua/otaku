@@ -28,4 +28,8 @@ export class UserService {
     return this.usersRepository.findOneBy({phone: phone});
   }
 
+  async getById(id: number): Promise<User | undefined>{
+    return this.usersRepository.findOneBy({id: id});
+  }
+
 }

@@ -34,7 +34,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
       path: path,
     };
 
-    console.log('全局报错：进入AllExceptionsFilter，接口路径：', path, '时间：', time);
+    console.log('全局报错：进入AllExceptionsFilter，接口路径：', path, '时间：', time, '错误信息：', exception);
 
     httpAdapter.reply(ctx.getResponse(), responseBody, httpStatus);
   }
