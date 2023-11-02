@@ -359,7 +359,7 @@ export class FormatterInterceptor <T> implements NestInterceptor<T, Response<T>>
 })
 ```
 
-3、intercept方法返回类型是Observable，就是`RxJS`，处理请求前或返回流都是使用**RxJS**函数，所以要了解下这个概念。
+3、intercept方法返回类型是Observable（被观察者），就是`RxJS`，处理请求前或返回流都是使用**RxJS**函数，所以要了解下这个概念。
 
 参考文章：https://zhuanlan.zhihu.com/p/583539989
 
