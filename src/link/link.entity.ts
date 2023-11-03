@@ -1,4 +1,12 @@
-import {Entity, Column, PrimaryGeneratedColumn, ManyToOne, RelationId} from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  ManyToOne,
+  RelationId,
+  CreateDateColumn,
+  DeleteDateColumn, UpdateDateColumn
+} from 'typeorm';
 import {User} from "../user/user.entity";
 
 export enum linkType {
@@ -18,12 +26,12 @@ export class Link {
   name: string;
 
   @Column({
-    unique: true,
+    // unique: true,
     default: ''
   })
   url: string;
 
-  @Column({default: false})
+  @DeleteDateColumn({nullable: false})
   deleteFlag: string;
 
   @Column({default: 0})
@@ -43,8 +51,19 @@ export class Link {
   })
   type: linkType;
 
-  @Column({default: ''})
+  @CreateDateColumn({
+    type: 'datetime',
+    comment: '创建时间',
+    default: ''
+  })
   createTime: string;
+
+  @UpdateDateColumn({
+    type: 'datetime',
+    comment: '修改时间',
+    default: ''
+  })
+  updateTime: string;
 
   @ManyToOne(() => User, (user) => user.links)
   user: User

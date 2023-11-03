@@ -18,4 +18,23 @@ export class LinkService {
         await this.linkRepository.save(link);
         return 'success';
     }
+
+    async getByUserId(user: User): Promise<Link[] | undefined> {
+        let resp = await this.linkRepository.query(`
+        select id,name,url,clickNumber,isPublic,goodNumber,type,userId,createTime from link where userId = ${user.id} and deleteFlag is NULL;
+        `);
+        return resp;
+    }
+
+    // 软删除会把 @DeleteDateColumn() 定义的列的值改为删除时间（默认是null）。查询时候要判断is Null
+    async deleteOne(link: Link) {
+        await this.linkRepository.softDelete(link.id);
+        return 'success';
+    }
+
+    async editById(link:Link) {
+        let {id, ...data} = link;
+        await this.linkRepository.update(id,data);
+        return 'success'
+    }
 }
