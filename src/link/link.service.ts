@@ -20,7 +20,7 @@ export class LinkService {
 
     async getByUserId(user: User): Promise<Link[] | undefined> {
         let resp = await this.linkRepository.query(`
-        select id,name,url,clickNumber,isPublic,goodNumber,type,userId,createTime from link where userId = ${user.id} and deleteFlag is NULL;
+        select id,name,url,clickNumber,isPublic,goodNumber,type,userId,createTime,updateTime from link where userId = ${user.id} and deleteFlag is NULL order by updateTime desc;
         `);
         return resp;
     }
