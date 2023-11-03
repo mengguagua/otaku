@@ -306,7 +306,7 @@ postman调用login效果
 
 ##### 一对多实体的增/删/改/查
 
-1、**定义Link实体**。User:Link 是 1:n的关系。Link这里使用了`@ManyToOne` 和 `@RelationId`，在User实例也还要定义`@OneToMany`，定义比较繁琐，目的是支持Repository内函数来处理一对多的关系。
+1、**定义Link实体**。User:Link 是 1:n的关系。官网文档是使用`@ManyToOne` 和 `@RelationId`，在User实体也要定义`@OneToMany`，定义比较繁琐，目的是支持用Repository的函数来处理一对多的关系。
 
 **实际场景建议使用普通的@Column定义userId关联User表，然后用Repository.query(sql)，直接写sql语句去查询**。
 
@@ -378,22 +378,27 @@ export class Link {
   })
   updateTime: string;
 
-  @ManyToOne(() => User, (user) => user.links)
-  user: User
-
-  @RelationId((link: Link) => link.user)
+  @Column({default: null})
   userId: number;
 
 }
 ```
 
-2、**新增接口**。这里按`@ManyToOne`逻辑走，需要将user整个数据设置到对象里，所以需要先查询一次。**按上述建议方案，可以直接赋值**
+2、**新增接口**。先查询一次，保证userId是存在的。
 
 ```typescript
 async addLink(link:Link) {
-    link.user = await this.userService.getById(link.userId);
-    await this.linkRepository.save(link);
-    return 'success';
+    let resp = await this.userService.getById(link.userId);
+    if (resp) {
+        link.userId = resp.id;
+        await this.linkRepository.save(link);
+        return 'success';
+    } else {
+        return {
+            code: '001',
+            message: 'userId不存在',
+        };
+    }
 }
 ```
 
@@ -421,9 +426,9 @@ async editById(link:Link) {
 
 ```typescript
 async getByUserId(user: User): Promise<Link[] | undefined> {
-    let resp = await this.linkRepository.query(`
-    select * from link where userId = ${user.id} and deleteFlag is NULL;
-    `);
+    let resp = await this.linkRepository.query(
+    `select * from link where userId = ${user.id} and deleteFlag is NULL;`
+    );
     return resp;
 }
 ```

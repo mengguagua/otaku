@@ -10,12 +10,21 @@ export class LinkService {
     constructor(
         @InjectRepository(Link)
         private linkRepository:Repository<Link>,
-        // private userService: UserService,
+        private userService: UserService,
     ) {}
 
     async addLink(link:Link) {
-        await this.linkRepository.save(link);
-        return 'success';
+        let resp = await this.userService.getById(link.userId);
+        if (resp) {
+            link.userId = resp.id;
+            await this.linkRepository.save(link);
+            return 'success';
+        } else {
+            return {
+                code: '001',
+                message: 'userId不存在',
+            };
+        }
     }
 
     async getByUserId(user: User): Promise<Link[] | undefined> {
