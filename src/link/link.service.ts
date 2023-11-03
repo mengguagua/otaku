@@ -13,8 +13,9 @@ export class LinkService {
         private userService: UserService,
     ) {}
 
-    async addLink(link:Link) {
-        let resp = await this.userService.getById(link.userId);
+    async addLink(link:Link, req: any) {
+        // 从token解析得到用户信息，以防万一还是库里再查询确认一次
+        let resp = await this.userService.getById(req.user?.sub);
         if (resp) {
             link.userId = resp.id;
             await this.linkRepository.save(link);
@@ -45,4 +46,5 @@ export class LinkService {
         await this.linkRepository.update(id,data);
         return 'success'
     }
+
 }

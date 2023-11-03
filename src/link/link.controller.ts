@@ -1,4 +1,4 @@
-import {Body, Controller, Post} from '@nestjs/common';
+import {Body, Controller, Post, Request} from '@nestjs/common';
 import {LinkService} from "./link.service";
 import {Link} from "./link.entity";
 import {User} from "../user/user.entity";
@@ -9,8 +9,8 @@ export class LinkController {
     }
 
     @Post('create')
-    async addLink(@Body() link:Link) {
-        return await this.linkService.addLink(link);
+    async addLink(@Body() link:Link, @Request() req) {
+        return await this.linkService.addLink(link, req);
     }
 
     @Post('getByUserId')

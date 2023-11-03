@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import {HttpException, Injectable} from '@nestjs/common';
 import {InjectRepository} from "@nestjs/typeorm";
 import {User} from "./user.entity";
 import {Repository} from "typeorm";
@@ -15,7 +15,15 @@ export class UserService {
   }
 
   async addUser(user: User) {
+    let res = await this.usersRepository.findOneBy({phone: user.phone});
+    if (res) {
+      return {
+        code: '1002',
+        message: '手机号已存在',
+      }
+    }
     await this.usersRepository.save(user);
+    return 'success';
   }
 
   async editUser(user: User) {
