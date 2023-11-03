@@ -23,7 +23,4 @@ export class User {
   @Column({ default: true })
   isActive: boolean;
 
-  // 这个属性不会存到数据库
-  @OneToMany(() => Link, (link) => link.user)
-  links: Link[]
 }

@@ -65,10 +65,13 @@ export class Link {
   })
   updateTime: string;
 
-  @ManyToOne(() => User, (user) => user.links)
-  user: User
+  // @ManyToOne(() => User, (user) => user.links)
+  // user: User
+  //
+  // @RelationId((link: Link) => link.user)
+  // userId: number;
 
-  @RelationId((link: Link) => link.user)
+  @Column({default: null})
   userId: number;
 
 }

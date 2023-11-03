@@ -304,6 +304,132 @@ postman调用login效果
 
 [![piAwePJ.png](https://z1.ax1x.com/2023/10/23/piAwePJ.png)](https://imgse.com/i/piAwePJ)
 
+##### 一对多实体的增/删/改/查
+
+1、**定义Link实体**。User:Link 是 1:n的关系。Link这里使用了`@ManyToOne` 和 `@RelationId`，在User实例也还要定义`@OneToMany`，定义比较繁琐，目的是支持Repository内函数来处理一对多的关系。
+
+**实际场景建议使用普通的@Column定义userId关联User表，然后用Repository.query(sql)，直接写sql语句去查询**。
+
+```typescript
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  ManyToOne,
+  RelationId,
+  CreateDateColumn,
+  DeleteDateColumn, UpdateDateColumn
+} from 'typeorm';
+import {User} from "../user/user.entity";
+
+export enum linkType {
+  NEWS = '新闻',
+  GAME = '游戏',
+  TECHNOLOGY = '技术',
+  QA = '问答',
+  HAPPY = '乐趣',
+}
+
+@Entity()
+export class Link {
+  @PrimaryGeneratedColumn('uuid')
+  id: number;
+
+  @Column({default: ''})
+  name: string;
+
+  @Column({
+    // unique: true,
+    default: ''
+  })
+  url: string;
+
+  @DeleteDateColumn({nullable: false})
+  deleteFlag: string;
+
+  @Column({default: 0})
+  clickNumber: string;
+
+  @Column({ default: false })
+  isPublic: boolean;
+
+  // 点赞数
+  @Column({default: 0})
+  goodNumber: string;
+
+  @Column({
+    type: 'enum',
+    enum: linkType,
+    default: linkType.HAPPY,
+  })
+  type: linkType;
+
+  @CreateDateColumn({
+    type: 'datetime',
+    comment: '创建时间',
+    default: ''
+  })
+  createTime: string;
+
+  @UpdateDateColumn({
+    type: 'datetime',
+    comment: '修改时间',
+    default: ''
+  })
+  updateTime: string;
+
+  @ManyToOne(() => User, (user) => user.links)
+  user: User
+
+  @RelationId((link: Link) => link.user)
+  userId: number;
+
+}
+```
+
+2、**新增接口**。这里按`@ManyToOne`逻辑走，需要将user整个数据设置到对象里，所以需要先查询一次。**按上述建议方案，可以直接赋值**
+
+```typescript
+async addLink(link:Link) {
+    link.user = await this.userService.getById(link.userId);
+    await this.linkRepository.save(link);
+    return 'success';
+}
+```
+
+3、**软删除接口**。删除标记字段定义`@DeleteDateColumn({nullable: false})`
+
+```typescript
+// 软删除会把 @DeleteDateColumn() 定义的列的值改为删除时间（默认是null）。查询时候要判断is Null
+async deleteOne(link: Link) {
+    await this.linkRepository.softDelete(link.id);
+    return 'success';
+}
+```
+
+4、**修改接口**。
+
+```typescript
+async editById(link:Link) {
+    let {id, ...data} = link;
+    await this.linkRepository.update(id,data);
+    return 'success'
+}
+```
+
+5、**查询接口**。使用query方法直接写sql查询
+
+```typescript
+async getByUserId(user: User): Promise<Link[] | undefined> {
+    let resp = await this.linkRepository.query(`
+    select * from link where userId = ${user.id} and deleteFlag is NULL;
+    `);
+    return resp;
+}
+```
+
+
+
 #### 拦截器
 
 定位：在方法执行之前/之后绑定额外的逻辑，转换函数返回的结果，接口请求安全处理（ip限频等）

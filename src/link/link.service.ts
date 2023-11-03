@@ -10,11 +10,10 @@ export class LinkService {
     constructor(
         @InjectRepository(Link)
         private linkRepository:Repository<Link>,
-        private userService: UserService,
+        // private userService: UserService,
     ) {}
 
     async addLink(link:Link) {
-        link.user = await this.userService.getById(link.userId);
         await this.linkRepository.save(link);
         return 'success';
     }
