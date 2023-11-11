@@ -502,6 +502,41 @@ export class FormatterInterceptor <T> implements NestInterceptor<T, Response<T>>
 
 
 
+### QA
+
+1、数据库时间格式怎么格式化？
+
+mysql使用DATE_FORMAT函数
+
+```sql
+select link.id,link.name,url,clickNumber,isPublic,goodNumber,type,userId,link.createTime,DATE_FORMAT(link.updateTime, '%Y-%m-%d %H:%i:%s') as updateTime , user.phone, user.nickName 
+from link left join user on link.userId = user.id 
+where link.deleteFlag is NULL and type='技术' 
+order by goodNumber 
+DESC limit 50
+```
+
+2、数据库时间返回有区时差异，怎么处理？
+
+配置dateStrings选型，默认false，执行toISOString()，导致有时区差异。改为true就直接返回时间字符串。
+
+```typescript
+TypeOrmModule.forRoot({
+  type: 'mysql',
+  host: 'localhost',
+  port: 3306,
+  username: 'root',
+  password: 'xxx',
+  database: 'otaku',
+  dateStrings:true,
+  entities: [User, Link],
+}),
+```
+
+
+
+
+
 ### 小窍门
 
 1、快速生成一个模块的文件和基础代码（会生成在src路径下）

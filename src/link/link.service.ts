@@ -30,7 +30,7 @@ export class LinkService {
 
     async getByUserId(user: User): Promise<Link[] | undefined> {
         let resp = await this.linkRepository.query(`
-        select id,name,url,clickNumber,isPublic,goodNumber,type,userId,createTime,updateTime from link where userId = ${user.id} and deleteFlag is NULL order by updateTime desc;
+            select id,name,url,clickNumber,isPublic,goodNumber,type,userId,createTime,updateTime from link where userId = ${user.id} and deleteFlag is NULL order by updateTime desc;
         `);
         return resp;
     }
@@ -47,4 +47,17 @@ export class LinkService {
         return 'success'
     }
 
+    async getPublic(link:Link) {
+        let sql = `select link.id,link.name,url,clickNumber,isPublic,goodNumber,type,userId,link.createTime,DATE_FORMAT(link.updateTime, '%Y-%m-%d %H:%i:%s') as updateTime, user.phone, user.nickName from link left join user on link.userId = user.id where link.deleteFlag is NULL order by goodNumber DESC limit 50`
+        if (link.type) {
+            sql = `select link.id,link.name,url,clickNumber,isPublic,goodNumber,type,userId,link.createTime,DATE_FORMAT(link.updateTime, '%Y-%m-%d %H:%i:%s') as updateTime, user.phone, user.nickName from link left join user on link.userId = user.id where link.deleteFlag is NULL and type="${link.type}" order by goodNumber DESC limit 50`;
+        }
+        if (link.name) {
+            sql = `select link.id,link.name,url,clickNumber,isPublic,goodNumber,type,userId,link.createTime,DATE_FORMAT(link.updateTime, '%Y-%m-%d %H:%i:%s') as updateTime, user.phone, user.nickName from link left join user on link.userId = user.id where link.deleteFlag is NULL and name like "%${link.name}%" order by goodNumber DESC limit 50`
+        }
+        if (link.type && link.name) {
+            sql = `select link.id,link.name,url,clickNumber,isPublic,goodNumber,type,userId,link.createTime,DATE_FORMAT(link.updateTime, '%Y-%m-%d %H:%i:%s') as updateTime, user.phone, user.nickName from link left join user on link.userId = user.id where link.deleteFlag is NULL and type="${link.type}" and name like "%${link.name}%" order by goodNumber DESC limit 50`
+        }
+        return await this.linkRepository.query(sql);
+    }
 }

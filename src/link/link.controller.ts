@@ -2,10 +2,17 @@ import {Body, Controller, Post, Request} from '@nestjs/common';
 import {LinkService} from "./link.service";
 import {Link} from "./link.entity";
 import {User} from "../user/user.entity";
+import {Public} from "../auth/decorators/public.decorator";
 
 @Controller('link')
 export class LinkController {
     constructor(private linkService :LinkService) {
+    }
+
+    @Public()
+    @Post('getPublic')
+    async getPublic(@Body() link:Link) {
+        return await this.linkService.getPublic(link);
     }
 
     @Post('create')

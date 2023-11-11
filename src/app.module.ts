@@ -23,6 +23,8 @@ import {Link} from "./link/link.entity";
       username: 'root',
       password: 'Gcc@163.com',
       database: 'otaku',
+      // timezone: '+08:00', // 设置时区
+      dateStrings:true,
       entities: [User, Link],
       synchronize: true, // 指示是否应在每次应用程序启动时自动创建数据库架构。生产中改false
     }),
