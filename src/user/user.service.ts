@@ -2,6 +2,7 @@ import {HttpException, Injectable} from '@nestjs/common';
 import {InjectRepository} from "@nestjs/typeorm";
 import {User} from "./user.entity";
 import {Repository} from "typeorm";
+import enumCode from "../tool/enumCode";
 
 @Injectable()
 export class UserService {
@@ -17,10 +18,7 @@ export class UserService {
   async addUser(user: User) {
     let res = await this.usersRepository.findOneBy({phone: user.phone});
     if (res) {
-      return {
-        code: '1002',
-        message: '手机号已存在',
-      }
+      throw new HttpException('手机号已存在', enumCode.PHONE_EXIST);
     }
     await this.usersRepository.save(user);
     return 'success';

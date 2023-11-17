@@ -1,21 +1,14 @@
 import {
   Body,
   Controller,
-  ForbiddenException,
-  Get,
-  ParseIntPipe,
+  Get, HttpException,
   Post,
-  Query,
-  Redirect,
-  Req,
-  UseFilters, UseInterceptors,
 } from '@nestjs/common';
-import { Request } from 'express';
 import { UserService } from '../user/user.service'
-import { HttpExceptionFilter } from '../filter/http-exception.filter';
 import {User} from "./user.entity";
-import {FormatterInterceptor} from "../Interceptors/formatter.interceptor";
 import {Public} from "../auth/decorators/public.decorator";
+import {validatePhoneNumber} from "../tool/tool";
+import enumCode from "../tool/enumCode";
 
 
 // @xxx是nextjs框架带有的，叫做decorator(装饰器)
@@ -50,8 +43,10 @@ export class UserController {
   // 这个方法报错会经过过滤器
   // @UseFilters(new HttpExceptionFilter())
   async addUserInfo(@Body() user: User) {
+    if (! validatePhoneNumber(user.phone)) {
+      throw new HttpException('手机号验证错误', enumCode.PHONE_ERROR);
+    }
     return await this.userService.addUser(user);
-    // throw new ForbiddenException();
   }
 
 }
