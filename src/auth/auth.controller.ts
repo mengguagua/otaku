@@ -1,9 +1,10 @@
-import {Body, Controller, Get, Post, UseGuards, Request} from '@nestjs/common';
+import {Body, Controller, Get, Post, UseGuards, Request, HttpException} from '@nestjs/common';
 import {AuthService} from "./auth.service";
 import {AuthLoginDto} from "../dto/auth-login.dto";
 import {validatePhoneNumber} from '../tool/tool';
 import {AuthGuard} from "./auth.guard";
 import {Public} from "./decorators/public.decorator";
+import enumCode from "../tool/enumCode";
 
 // todo登出，jwt没有登出方法。
 // 方案1，加一个redis服务，登录的用户信息放redis里，每次鉴权解析token得到用户信息和redis比较，通过删除redis用户信息来登出
@@ -19,16 +20,20 @@ export class AuthController {
     @Post('login')
     login(@Body() authLoginDto: AuthLoginDto) {
         if (! validatePhoneNumber(authLoginDto.phone)) {
-            return {message: '手机号验证错误'}
+            let code = enumCode.PHONE_ERROR;
+            throw new HttpException('手机号验证错误', code);
+            // return {message: '手机号验证错误'}
         }
         return this.authService.signIn(authLoginDto.phone, authLoginDto.password);
     }
 
     // 测试token是否存在，其实已经在auth.module里声明了全局拦截
     @UseGuards(AuthGuard)
-    @Get('profile')
+    @Public()
+    @Post('userInfo')
     getProfile(@Request() req) {
-        return req.user;
+        return {name: ''};
+        // return req.user;
     }
 
 }

@@ -32,6 +32,12 @@
        >  命名规则：业务名称-接口名称.dto.ts，如ath-login.dto.ts
      
      - user等 // 业务目录:包括controller，service和module（框架建议一个模块内容放在一个文件夹内）
+     
+     - tool
+     
+       - tool.js // 工具方法
+       - enumCode.ts // 业务错误码
+     
 
 ### 主体功能
 
