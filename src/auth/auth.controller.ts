@@ -27,13 +27,11 @@ export class AuthController {
         return this.authService.signIn(authLoginDto.phone, authLoginDto.password);
     }
 
-    // 测试token是否存在，其实已经在auth.module里声明了全局拦截
+    // token是否存在，其实已经在auth.module里声明了全局拦截
     @UseGuards(AuthGuard)
-    @Public()
     @Post('userInfo')
     getProfile(@Request() req) {
-        return {name: ''};
-        // return req.user;
+        return req.user || '';
     }
 
 }
