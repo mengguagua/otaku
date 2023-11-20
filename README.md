@@ -15,7 +15,7 @@
 
 - src // 代码目录
 
-     - filter // 过滤器目录
+     - filter // 过滤器目录，全局错误拦截
      
      - guards // 授权守卫。处理鉴权逻辑
      
@@ -151,11 +151,11 @@ async addUser(user: User) {
 })
 ```
 
-> 本地安装要mysql数据库，设置正确对应的host/端口/用户/密码/数据库
+> 本地安装要mysql数据库，设置正确对应的host/端口/用户/密码/数据库。并提前建立好数据库。
 
 11、最终效果，typeorm框架会创建`user`表，插入对应数据。
 
-[<img src="https://z1.ax1x.com/2023/10/18/piP7hrD.png" alt="piP7hrD.png" style="zoom: 33%;" />](https://imgse.com/i/piP7hrD)
+<img src="https://z1.ax1x.com/2023/10/18/piP7hrD.png" alt="piP7hrD.png" style="zoom: 33%;" />
 
 ##### 用户登录/鉴权
 
@@ -206,19 +206,20 @@ export class AuthLoginDto {
   > ```
 
 ```js
-async signIn(phone: string, pass: string): Promise<any> {
-      let user = await this.userService.findOne(phone);
-      if (user?.password != pass) {
-          throw new UnauthorizedException(); // 密码错误
-      }
-      const payload = { sub: user.id, username: user.phone }; // 加密，解密后也是拿到这个内容
-      // 解构写法，password是user属性，取用后，result这个自定义的对象就是user去掉password后的内容
-      const {password, ...result} = user; // token包含的用户信息去掉密码。
-      return {
-          access_token: await this.jwtService.signAsync(payload), // 创建token
-          ...result
-      };
-  }
+    // 登录验证
+    async signIn(phone: string, pass: string): Promise<any> {
+        let user = await this.userService.findOne(phone);
+        if (user?.password != pass) {
+            throw new HttpException('密码错误', enumCode.PASSWORD_ERROR);
+        }
+        const payload = { sub: user.id, username: user.phone }; // 加密，解密后也是拿到这个内容
+        // 解构写法，password是user属性，取用后，result这个自定义的对象就是user去掉password后的内容
+        const {password, ...result} = user; // token包含的用户信息去掉密码。
+        return {
+            access_token: await this.jwtService.signAsync(payload), // 创建token
+            ...result
+        };
+    }
 ```
 
 5、创建鉴权类AuthGuard继承CanActivate，实现验证token，并可从token获取用户信息
@@ -233,12 +234,12 @@ async signIn(phone: string, pass: string): Promise<any> {
 
   > ```
   > providers: [
-  >   AuthService,
-  >   // 设置全局路由鉴权
-  >   {
-  >     provide: APP_GUARD,
-  >     useClass: AuthGuard,
-  >   }
+  >     AuthService,
+  >     // 设置全局路由鉴权
+  >     {
+  >       provide: APP_GUARD,
+  >       useClass: AuthGuard,
+  >     }
   > ]
   > ```
 
@@ -306,9 +307,9 @@ login(@Body() authLoginDto: AuthLoginDto) {
 
 postman调用login效果
 
-[![piAwFbT.png](https://z1.ax1x.com/2023/10/23/piAwFbT.png)](https://imgse.com/i/piAwFbT)
+![](https://z1.ax1x.com/2023/10/23/piAwFbT.png)
 
-[![piAwePJ.png](https://z1.ax1x.com/2023/10/23/piAwePJ.png)](https://imgse.com/i/piAwePJ)
+![piAwePJ.png](https://z1.ax1x.com/2023/10/23/piAwePJ.png)
 
 ##### 一对多实体的增/删/改/查
 
@@ -439,9 +440,7 @@ async getByUserId(user: User): Promise<Link[] | undefined> {
 }
 ```
 
-
-
-#### 拦截器
+#### 拦截器-数据格式化
 
 定位：在方法执行之前/之后绑定额外的逻辑，转换函数返回的结果，接口请求安全处理（ip限频等）
 
@@ -504,7 +503,87 @@ export class FormatterInterceptor <T> implements NestInterceptor<T, Response<T>>
 
 4、格式化拦截器效果
 
-[<img src="https://z1.ax1x.com/2023/11/01/piuFNGD.png" alt="piuFNGD.png" style="zoom: 50%;" />](https://imgse.com/i/piuFNGD)
+<img src="https://z1.ax1x.com/2023/11/01/piuFNGD.png" alt="piuFNGD.png" style="zoom: 50%;" />
+
+#### 全局报错拦截器
+
+1、定义全局拦截，且判断是否有自定义的业务报错，有则返回业务报错信息。
+
+```typescript
+import {
+  ExceptionFilter,
+  Catch,
+  ArgumentsHost,
+  HttpException,
+  HttpStatus,
+} from '@nestjs/common';
+import { HttpAdapterHost } from '@nestjs/core';
+import enumCode from "../tool/enumCode";
+
+// 报错类实现ExceptionFilter接口并用@Catch()注解
+@Catch()
+export class AllExceptionsFilter implements ExceptionFilter {
+  // HttpAdapterHost用来继续返回后续逻辑
+  constructor(private readonly httpAdapterHost: HttpAdapterHost) {}
+	// 所有报错，所以设置unknown
+  catch(exception: unknown, host: ArgumentsHost) {
+    const { httpAdapter } = this.httpAdapterHost;
+		// 获取上下文，内部有请求体，返回体等多种数据
+    const ctx = host.switchToHttp();
+		
+    const httpStatus =
+      exception instanceof HttpException
+        ? exception.getStatus()
+        : HttpStatus.INTERNAL_SERVER_ERROR;
+		// 设置默认报错
+    const message = exception instanceof HttpException ? exception.getResponse() : {message:'网络拥堵，稍后再试'};
+
+    const path = httpAdapter.getRequestUrl(ctx.getRequest());
+    const time = new Date().toISOString();
+    // 设置默认报错返回体
+    let responseBody = {
+      status: 0, // 1正确，0错误
+      data: typeof message === 'object'? {...message} : message,
+      timestamp: time,
+      path: path,
+    };
+
+    console.log('全局报错：进入AllExceptionsFilter，接口路径：', path, '时间：', time, '错误信息：', exception);
+		// 判断报错编码是不是自定义业务；是则返回业务报错 （自定义报错统一用HttpException类型报错）
+    let enumCodeList = Object.values(enumCode);
+    if (enumCodeList.includes(httpStatus)) {
+      responseBody = {
+        status: httpStatus, // 自定义错误拦截
+        data: exception instanceof HttpException ? exception.message : '',
+        timestamp: time,
+        path: path,
+      };
+      httpAdapter.reply(ctx.getResponse(), responseBody, 200);
+    } else {
+      httpAdapter.reply(ctx.getResponse(), responseBody, httpStatus);
+    }
+  }
+}
+```
+
+2、返回自定义业务报错示例
+
+```typescript
+// @Public()自定义装饰器，声明一个元数据，在鉴权判断是否有这个注解，有则跳过鉴权
+@Public()
+@Post('login')
+login(@Body() authLoginDto: AuthLoginDto) {
+    if (! validatePhoneNumber(authLoginDto.phone)) {
+        let code = enumCode.PHONE_ERROR;
+        throw new HttpException('手机号验证错误', code); // 关注这行
+    }
+    return this.authService.signIn(authLoginDto.phone, authLoginDto.password);
+}
+```
+
+3、页面报错示例
+
+<img src="https://z1.ax1x.com/2023/11/20/piUUo3F.png" style="zoom:50%;" />
 
 
 
