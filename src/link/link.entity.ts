@@ -15,6 +15,7 @@ export enum linkType {
   TECHNOLOGY = '技术',
   QA = '问答',
   HAPPY = '乐趣',
+  OTHER = '其它',
 }
 
 @Entity()

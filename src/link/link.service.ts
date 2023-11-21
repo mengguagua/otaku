@@ -28,10 +28,14 @@ export class LinkService {
         }
     }
 
-    async getByUserId(user: User): Promise<Link[] | undefined> {
-        let resp = await this.linkRepository.query(`
-            select id,name,url,clickNumber,isPublic,goodNumber,type,userId,createTime,updateTime from link where userId = ${user.id} and deleteFlag is NULL order by updateTime desc;
-        `);
+    async getByUserId(link: Link, req: any): Promise<Link[] | undefined> {
+        let id = req?.user?.sub;
+        let field = `id,name,url,clickNumber,isPublic,goodNumber,type,userId,createTime,updateTime`;
+        let sql = `select ${field} from link where userId = ${id} and deleteFlag is NULL order by updateTime desc;`
+        if (link.name) {
+            sql = `select ${field} from link where userId = ${id} and deleteFlag is NULL and name like "%${link.name}%" order by updateTime desc;`
+        }
+        let resp = await this.linkRepository.query(sql);
         return resp;
     }
 
@@ -48,15 +52,17 @@ export class LinkService {
     }
 
     async getPublic(link:Link) {
-        let sql = `select link.id,link.name,url,clickNumber,isPublic,goodNumber,type,userId,link.createTime,DATE_FORMAT(link.updateTime, '%Y-%m-%d %H:%i:%s') as updateTime, user.phone, user.nickName from link left join user on link.userId = user.id where link.deleteFlag is NULL order by goodNumber DESC limit 50`
+        let field = `link.id,link.name,url,clickNumber,isPublic,goodNumber,type,userId,link.createTime,DATE_FORMAT(link.updateTime, '%Y-%m-%d %H:%i:%s') as updateTime, user.phone, user.nickName`;
+
+        let sql = `select ${field} from link left join user on link.userId = user.id where link.deleteFlag is NULL and isPublic=1 order by goodNumber DESC limit 50`
         if (link.type) {
-            sql = `select link.id,link.name,url,clickNumber,isPublic,goodNumber,type,userId,link.createTime,DATE_FORMAT(link.updateTime, '%Y-%m-%d %H:%i:%s') as updateTime, user.phone, user.nickName from link left join user on link.userId = user.id where link.deleteFlag is NULL and type="${link.type}" order by goodNumber DESC limit 50`;
+            sql = `select ${field} from link left join user on link.userId = user.id where link.deleteFlag is NULL and isPublic=1 and type="${link.type}" order by goodNumber DESC limit 50`;
         }
         if (link.name) {
-            sql = `select link.id,link.name,url,clickNumber,isPublic,goodNumber,type,userId,link.createTime,DATE_FORMAT(link.updateTime, '%Y-%m-%d %H:%i:%s') as updateTime, user.phone, user.nickName from link left join user on link.userId = user.id where link.deleteFlag is NULL and name like "%${link.name}%" order by goodNumber DESC limit 50`
+            sql = `select ${field} from link left join user on link.userId = user.id where link.deleteFlag is NULL and isPublic=1 and name like "%${link.name}%" order by goodNumber DESC limit 50`
         }
         if (link.type && link.name) {
-            sql = `select link.id,link.name,url,clickNumber,isPublic,goodNumber,type,userId,link.createTime,DATE_FORMAT(link.updateTime, '%Y-%m-%d %H:%i:%s') as updateTime, user.phone, user.nickName from link left join user on link.userId = user.id where link.deleteFlag is NULL and type="${link.type}" and name like "%${link.name}%" order by goodNumber DESC limit 50`
+            sql = `select ${field} from link left join user on link.userId = user.id where link.deleteFlag is NULL and isPublic=1 and type="${link.type}" and name like "%${link.name}%" order by goodNumber DESC limit 50`
         }
         return await this.linkRepository.query(sql);
     }

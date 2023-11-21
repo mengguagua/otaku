@@ -12,7 +12,7 @@ import {AuthGuard} from "./auth.guard";
     JwtModule.register({
       global: true,
       secret: jwtConstants.secret,
-      signOptions: { expiresIn: '7d' },
+      signOptions: { expiresIn: '7d' }, // 失效时间7天
     }), // 模块都是先导入再使用，所以JwtModule也一样。
   ], // 鉴权需要使用userService内的方法，获取用户信息所以要导入
   controllers: [AuthController],

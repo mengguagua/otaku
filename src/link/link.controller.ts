@@ -1,8 +1,9 @@
-import {Body, Controller, Post, Request} from '@nestjs/common';
+import {Body, Controller, Post, Request, UseGuards} from '@nestjs/common';
 import {LinkService} from "./link.service";
 import {Link} from "./link.entity";
 import {User} from "../user/user.entity";
 import {Public} from "../auth/decorators/public.decorator";
+import {AuthGuard} from "../auth/auth.guard";
 
 @Controller('link')
 export class LinkController {
@@ -20,9 +21,10 @@ export class LinkController {
         return await this.linkService.addLink(link, req);
     }
 
+    // @UseGuards(AuthGuard)
     @Post('getByUserId')
-    async getByUserId(@Body() user:User) {
-        return await this.linkService.getByUserId(user);
+    async getByUserId(@Body() link:Link, @Request() req) {
+        return await this.linkService.getByUserId(link, req);
     }
 
     @Post('delete')
