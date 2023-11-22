@@ -24,10 +24,11 @@ export class UserService {
     return 'success';
   }
 
-  async editUser(user: User) {
+  async editUser(user: User, req: any) {
     let {id, ...data} = user;
-    // 修改表id是id的这条数据，对应字段内容修改为data
-    await this.usersRepository.update(id, data);
+    let userId = req.user?.sub;
+    // 取token的id，修改表内容为data
+    await this.usersRepository.update(userId, data);
   }
 
   async findOne(phone: string): Promise<User | undefined>{

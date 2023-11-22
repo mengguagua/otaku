@@ -2,7 +2,7 @@ import {
   Body,
   Controller,
   Get, HttpException,
-  Post,
+  Post, Request,
 } from '@nestjs/common';
 import { UserService } from '../user/user.service'
 import {User} from "./user.entity";
@@ -34,8 +34,8 @@ export class UserController {
   }
 
   @Post('edit')
-  checkUserInfo(@Body() user: User) {
-    this.userService.editUser(user);
+  checkUserInfo(@Body() user: User, @Request() req) {
+    this.userService.editUser(user, req);
   }
 
   @Public()

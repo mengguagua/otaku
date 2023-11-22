@@ -16,7 +16,7 @@ export class AuthService {
         if (user?.password != pass) {
             throw new HttpException('密码错误', enumCode.PASSWORD_ERROR);
         }
-        const payload = { sub: user.id, username: user.phone }; // 加密，解密后也是拿到这个内容
+        const payload = { sub: user.id, username: user.phone, nickName: user.nickName, email: user.email }; // 加密，解密后也是拿到这个内容
         // 解构写法，password是user属性，取用后，result这个自定义的对象就是user去掉password后的内容
         const {password, ...result} = user; // token包含的用户信息去掉密码。
         return {
