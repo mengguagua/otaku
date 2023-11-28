@@ -30,10 +30,10 @@ export class LinkService {
 
     async getByUserId(link: Link, req: any): Promise<Link[] | undefined> {
         let id = req?.user?.sub;
-        let field = `id,name,url,clickNumber,isPublic,goodNumber,type,userId,createTime,updateTime`;
-        let sql = `select ${field} from link where userId = ${id} and deleteFlag is NULL order by updateTime desc;`
+        let field = `link.id,link.name,url,clickNumber,isPublic,goodNumber,type,userId,link.createTime,DATE_FORMAT(link.updateTime, '%Y-%m-%d %H:%i:%s') as updateTime, user.phone, user.nickName`;
+        let sql = `select ${field} from link left join user on link.userId = user.id where userId = ${id} and link.deleteFlag is NULL order by clickNumber desc, updateTime desc;`
         if (link.name) {
-            sql = `select ${field} from link where userId = ${id} and deleteFlag is NULL and name like "%${link.name}%" order by updateTime desc;`
+            sql = `select ${field} from link left join user on link.userId = user.id where userId = ${id} and link.deleteFlag is NULL and name like "%${link.name}%" order by clickNumber desc, updateTime desc;`
         }
         let resp = await this.linkRepository.query(sql);
         return resp;
@@ -47,7 +47,30 @@ export class LinkService {
 
     async editById(link:Link) {
         let {id, ...data} = link;
-        await this.linkRepository.update(id,data);
+        let dbLink = {
+            url: data.url,
+            name: data.name,
+            type: data.type,
+        };
+        await this.linkRepository.update(id,dbLink);
+        return 'success'
+    }
+
+    async changeIsPublicById(link:Link) {
+        let {id, ...data} = link;
+        let dbLink = {
+            isPublic: data.isPublic,
+        };
+        await this.linkRepository.update(id,dbLink);
+        return 'success'
+    }
+
+    async changeRankById(link:Link) {
+        let {id, ...data} = link;
+        let dbLink = {
+            clickNumber: data.clickNumber,
+        };
+        await this.linkRepository.update(id,dbLink);
         return 'success'
     }
 

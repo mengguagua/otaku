@@ -37,4 +37,14 @@ export class LinkController {
         return await this.linkService.editById(link);
     }
 
+    @Post('changeIsPublic')
+    async changeIsPublicById(@Body() link:Link) {
+        return await this.linkService.changeIsPublicById(link);
+    }
+
+    @Post('changeRank')
+    async changeRankById(@Body() link:Link) {
+        return await this.linkService.changeRankById(link);
+    }
+
 }
