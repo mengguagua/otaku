@@ -47,4 +47,9 @@ export class LinkController {
         return await this.linkService.changeRankById(link);
     }
 
+    @Post('changeGoodNumber')
+    async changeGoodNumberById(@Body() link:Link, @Request() req) {
+        return await this.linkService.changeGoodNumberById(link, req);
+    }
+
 }

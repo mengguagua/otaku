@@ -43,7 +43,7 @@ export class Link {
 
   // 点赞数
   @Column({default: 0})
-  goodNumber: string;
+  goodNumber: Number;
 
   @Column({
     type: 'enum',
