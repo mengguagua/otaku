@@ -503,7 +503,7 @@ export class FormatterInterceptor <T> implements NestInterceptor<T, Response<T>>
 
 4、格式化拦截器效果
 
-<img src="https://z1.ax1x.com/2023/11/01/piuFNGD.png" alt="piuFNGD.png" style="zoom: 50%;" />
+<img src="https://z1.ax1x.com/2023/11/01/piuFNGD.png" alt="piuFNGD.png" style="zoom: 67%;" />
 
 #### 全局报错拦截器
 
@@ -583,7 +583,7 @@ login(@Body() authLoginDto: AuthLoginDto) {
 
 3、页面报错示例
 
-<img src="https://z1.ax1x.com/2023/11/20/piUUo3F.png" style="zoom:50%;" />
+![](https://z1.ax1x.com/2023/11/20/piUUo3F.png)
 
 
 

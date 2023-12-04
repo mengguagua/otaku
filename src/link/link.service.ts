@@ -110,15 +110,15 @@ export class LinkService {
     async getPublic(link:Link) {
         let field = `link.id,link.name,url,clickNumber,isPublic,goodNumber,type,userId,link.createTime,DATE_FORMAT(link.updateTime, '%Y-%m-%d %H:%i:%s') as updateTime, user.phone, user.nickName`;
 
-        let sql = `select ${field} from link left join user on link.userId = user.id where link.deleteFlag is NULL and isPublic=1 order by goodNumber DESC limit 50`
+        let sql = `select ${field} from link left join user on link.userId = user.id where link.deleteFlag is NULL and isPublic=1 order by goodNumber DESC,updateTime desc limit 50`
         if (link.type) {
-            sql = `select ${field} from link left join user on link.userId = user.id where link.deleteFlag is NULL and isPublic=1 and type="${link.type}" order by goodNumber DESC limit 50`;
+            sql = `select ${field} from link left join user on link.userId = user.id where link.deleteFlag is NULL and isPublic=1 and type="${link.type}" order by goodNumber DESC, updateTime desc limit 50`;
         }
         if (link.name) {
-            sql = `select ${field} from link left join user on link.userId = user.id where link.deleteFlag is NULL and isPublic=1 and name like "%${link.name}%" order by goodNumber DESC limit 50`
+            sql = `select ${field} from link left join user on link.userId = user.id where link.deleteFlag is NULL and isPublic=1 and name like "%${link.name}%" order by goodNumber DESC, updateTime desc limit 50`
         }
         if (link.type && link.name) {
-            sql = `select ${field} from link left join user on link.userId = user.id where link.deleteFlag is NULL and isPublic=1 and type="${link.type}" and name like "%${link.name}%" order by goodNumber DESC limit 50`
+            sql = `select ${field} from link left join user on link.userId = user.id where link.deleteFlag is NULL and isPublic=1 and type="${link.type}" and name like "%${link.name}%" order by goodNumber DESC, updateTime desc limit 50`
         }
         return await this.linkRepository.query(sql);
     }
