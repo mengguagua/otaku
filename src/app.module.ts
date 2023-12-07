@@ -17,8 +17,7 @@ import {Link} from "./link/link.entity";
   imports: [
     TypeOrmModule.forRoot({
       type: 'mysql',
-      // host: 'localhost',
-      host: '60.204.217.188',
+      host: 'localhost',
       port: 3306,
       username: 'root',
       password: 'Gcc@163.com',
