@@ -12,7 +12,8 @@ export class LinkController {
 
     @Public()
     @Post('getPublic')
-    async getPublic(@Body() link:Link) {
+    async getPublic(@Body() link:Link, @Request() req) {
+        // const ipAddress = req.clientIp;
         return await this.linkService.getPublic(link);
     }
 

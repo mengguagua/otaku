@@ -585,7 +585,38 @@ login(@Body() authLoginDto: AuthLoginDto) {
 
 ![](https://z1.ax1x.com/2023/11/20/piUUo3F.png)
 
+### 部署到Linux
 
+#### 问题
+
+将NestJs项目上传到云服务后，`npm i `下载依赖后通过`npm run start`启动。可正常运行，但有一个问题，服务进程运行在前台，控制台稍有变动就会中断，例如`control+c`就会中断服务。
+
+#### 解决
+
+1、下载PM2工具：https://pm2.keymetrics.io/docs/usage/quick-start/
+
+```sh
+npm install pm2@latest -g
+```
+
+M2 是一个守护进程管理器，可以管理和保持应用程序在线，即可以让NestJs服务在后台静默运行。
+
+2、运行。**目录切换到项目`package.json`同级目录下**。
+
+```sh
+pm2 start npm --name "otaku" -- start # otaku是app_name， 自定义的名称
+```
+
+3、PM2常用命令
+
+```sh
+pm2 ls # 查看当前进程
+pm2 logs --lines 200 # 查看日志，--lines 200指定行数，可省略
+pm2 restart app_name
+pm2 reload app_name
+pm2 stop app_name
+pm2 delete app_name
+```
 
 ### QA
 
